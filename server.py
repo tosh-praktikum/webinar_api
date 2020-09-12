@@ -1,6 +1,14 @@
 from wsgiref.util import setup_testing_defaults
 from wsgiref.simple_server import make_server
 
+import views
+
+ROUTING = {
+	"/":         views.index,
+# 	"/send":     views.send_message,
+#	"/index.js": views.index_js,
+}
+
 def simple_app(environ, start_response): # must return list of byte-strings (unicode_string.encode())
 	setup_testing_defaults(environ)
 	
@@ -13,19 +21,13 @@ def simple_app(environ, start_response): # must return list of byte-strings (uni
 
 	print(f"Received request for path {environ['PATH_INFO']}")
 	
-	headers = [('Content-type', 'text/html')]
-	start_response(status, headers)
+	path = environ['PATH_INFO']
+	view_func = ROUTING.get(path)
 
+	if view_func:
+		return view_func(environ, start_response)
 
-	html = '''<html>
-		<head>
-			<title>hardcoded html</title>
-		</head>
-		<body>
-			hardcoded text
-		</body>
-	</html>'''
-	return [html.encode('utf-8')]
+	return views.resp_404(environ, start_response)
 
 if __name__ == "__main__":
 	port = 8000
