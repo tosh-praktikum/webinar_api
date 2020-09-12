@@ -5,7 +5,7 @@ import views
 
 ROUTING = {
 	"/":         views.index,
-# 	"/send":     views.send_message,
+ 	"/send":     views.send_message,
 #	"/index.js": views.index_js,
 }
 
