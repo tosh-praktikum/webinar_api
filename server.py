@@ -5,8 +5,8 @@ import views
 
 ROUTING = {
 	"/":         views.index,
- 	"/send":     views.send_message,
-#	"/index.js": views.index_js,
+	"/send":     views.send_message,
+	"/index.js": views.index_js,
 }
 
 def simple_app(environ, start_response): # must return list of byte-strings (unicode_string.encode())
@@ -20,7 +20,6 @@ def simple_app(environ, start_response): # must return list of byte-strings (uni
 	# environ['REMOTE_ADDR'] - IP address of user which sent the request
 
 	print(f"Received request for path {environ['PATH_INFO']}")
-	
 	path = environ['PATH_INFO']
 	view_func = ROUTING.get(path)
 

@@ -1,13 +1,13 @@
-import json
 import os
-from pprint import pprint
-from dotenv import load_dotenv
-import telegram
+import json
 
+from dotenv import load_dotenv
+
+from telegram import TelegramBotClient
 
 load_dotenv()
 CHAT_ID = os.getenv('CHAT_ID')
-
+TG_CLIENT = TelegramBotClient()
 
 def index (environ, start_response):
 	status = '200 OK'
@@ -19,31 +19,36 @@ def index (environ, start_response):
 
 	return [response]
 
+def index_js (environ, start_response):
+	status = '200 OK'
+	headers = [('Content-type', 'text/javascript')]
+	start_response(status, headers)
 
-def send_message(environ, start_response):
-	method = environ['REQUEST_METHOD'].upper()
-	if method != 'POST':
+	with open('index.js', 'rb') as f:
+		response = f.read()
+		
+	return [response]
+
+def send_message (environ, start_response):
+	if environ['REQUEST_METHOD'].upper() != 'POST':
 		return resp_404(environ, start_response)
+
+	body_len = int(environ.get('CONTENT_LENGTH', 0))
+	body = environ['wsgi.input'].read(body_len).decode('utf-8')
+	data = json.loads(body)
+
+	TG_CLIENT.call_method('sendMessage', {'chat_id': CHAT_ID, 'text': data['message']})
 
 	status = '200 OK'
 	headers = [('Content-type', 'application/json')]
 	start_response(status, headers)
 
-	body_len = int(environ.get('CONTENT_LENGTH', 0))
-	body = environ['wsgi.input'].read(body_len).decode('utf-8')
+	response = {'status': 'ok'}
 
-	data = json.loads(body)
-	pprint(data)
-	text = data['text']
+	ret = [json.dumps(response).encode('utf-8')]
+	return ret
 
-	client = telegram.TelegramBotClient()
-	client.call_method('sendMessage', {'chat_id': CHAT_ID, 'text': text})
-
-	response = '{"status": "ok"}'.encode()
-	return [response]
-
-
-def resp_404(environ, start_response):
+def resp_404 (environ, start_response):
 	start_response('404 Not Found', [])
 
 	return []
